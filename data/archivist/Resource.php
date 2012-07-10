@@ -164,7 +164,7 @@ class LinkInfo {
 		$level = $level < 0 ? 0 : $level;
 		
 		if($this->external) {
-			$this->savePath = '_ext_';
+			$this->savePath = str_repeat('../', $level) . '_ext_';
 			$this->saveFile = md5($link) . '-' . $pathInfo['basename'];
 			$this->replacePath = $this->savePath . '/' . $this->saveFile;
 			
@@ -201,19 +201,7 @@ class LinkInfo {
 			else {
 				$this->replacePath = $link;
 			}
-			/*
-			if(!empty($this->replacePath)) {
-				$this->replacePath .= '/';
-			}
-			$this->replacePath .= $this->saveFile;
-			*/
 		}
-		/*
-		echo "<pre>--------------\n";
-		$this->_baseUrl = $baseUrl;
-		$this->_link = $link;
-		print_r( $this );
-		*/
 		$this->originalChunk = $link;
 		$this->replaceChunk = $this->replacePath;
 	}
