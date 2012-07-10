@@ -18,3 +18,5 @@ robots.txt
 .buildpath
 .externalToolBuilders
 cache.properties
+
+www/params.php

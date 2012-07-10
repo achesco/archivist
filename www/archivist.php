@@ -1,13 +1,8 @@
 <?
 
 require('../data/archivist/Archivist.php');
+require('params.php');
 
-$arch = new Archivist(array(
-	'rootUrl' => 'http://fxtrend/',
-	'pagesList' => array(
-		'/registration-new/',
-	),
-	'gzipped' => false,
-));
+$arch = new Archivist($params);
 
 $arch->run();
