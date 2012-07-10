@@ -41,35 +41,47 @@ class Resource {
 		// content parsing by resource type
 	}
 
-	public function sawScripts($saw) {
-		foreach($saw->get('script')->toArray() as $link) {
-			if(isset($link['src'])) {
-				$link = new LinkInfo($this->url, $link['src']);
-				$link->encloseOriginalChunk('src="', '"');
-				$link->encloseReplaceChunk('src="', '"');
-				$this->linksList['scripts'][] = $link;
+	public function sawScripts() {
+		preg_match_all('/<script[^>]+src="([^"]+)"/', $this->content, $matches);
+		if(isset($matches[1])) {
+			for($i=0; $i < count($matches[1]); $i++) {
+				$link = $matches[1][$i];
+				if(!empty($link)) {
+					$link = new LinkInfo($this->url, $link);
+					$link->encloseOriginalChunk('src="', '"');
+					$link->encloseReplaceChunk('src="', '"');
+					$this->linksList['scripts'][] = $link;
+				}
 			}
 		}
 	}
 	
-	public function sawStyles($saw) {
-		foreach($saw->get('link[rel=stylesheet]')->toArray() as $link) {
-			if(isset($link['href'])) {
-				$link = new LinkInfo($this->url, $link['href']);
-				$link->encloseOriginalChunk('href="', '"');
-				$link->encloseReplaceChunk('href="', '"');
-				$this->linksList['styles'][] = $link;
+	public function sawStyles() {
+		preg_match_all('/<link[^>]+href="([^"]+)"/', $this->content, $matches);
+		if(isset($matches[1])) {
+			for($i=0; $i < count($matches[1]); $i++) {
+				$link = $matches[1][$i];
+				if(!empty($link) && strpos($matches[0][$i], 'rel="stylesheet"') > 0) {
+					$link = new LinkInfo($this->url, $link);
+					$link->encloseOriginalChunk('href="', '"');
+					$link->encloseReplaceChunk('href="', '"');
+					$this->linksList['styles'][] = $link;
+				}
 			}
 		}
 	}
 	
-	public function sawImages($saw) {
-		foreach($saw->get('img')->toArray() as $link) {
-			if(isset($link['src'])) {
-				$link = new LinkInfo($this->url, $link['src']);
-				$link->encloseOriginalChunk('src="', '"');
-				$link->encloseReplaceChunk('src="', '"');
-				$this->linksList['images'][] = $link;
+	public function sawImages() {
+		preg_match_all('/<img[^>]+src="([^"]+)"/', $this->content, $matches);
+		if(isset($matches[1])) {
+			for($i=0; $i < count($matches[1]); $i++) {
+				$link = $matches[1][$i];
+				if(!empty($link)) {
+					$link = new LinkInfo($this->url, $link);
+					$link->encloseOriginalChunk('src="', '"');
+					$link->encloseReplaceChunk('src="', '"');
+					$this->linksList['images'][] = $link;
+				}
 			}
 		}
 	}
@@ -222,10 +234,9 @@ class Page extends Resource {
 	}
 
 	public function saw() {
-		$saw = new nokogiri($this->content);
-		$this->sawScripts($saw);
-		$this->sawStyles($saw);
-		$this->sawImages($saw);
+		$this->sawScripts();
+		$this->sawStyles();
+		$this->sawImages();
 		$this->sawBgUrls();
 	}
 }

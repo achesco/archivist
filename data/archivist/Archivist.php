@@ -10,7 +10,6 @@
  * @todo archive, actually
  */
 
-require('nokogiri.php');
 require('Resource.php');
 
 class Archivist {
