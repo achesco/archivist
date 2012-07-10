@@ -20,3 +20,4 @@ robots.txt
 cache.properties
 
 www/params.php
+www/out/*
