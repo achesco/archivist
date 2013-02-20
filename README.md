@@ -1,4 +1,4 @@
-Example `params.php`
+Example `www/params.php`
 =========
 
 ```php
