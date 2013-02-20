@@ -23,6 +23,7 @@ class Resource {
 	}
 
 	public function load() {
+		echo "Loading: " . $this->url . "\n";
 		$this->content = $this->decode(file_get_contents($this->url));
 	}
 	
@@ -184,11 +185,21 @@ class LinkInfo {
 		}
 		else {
 			$this->savePath = ltrim($pathInfo['dirname'], '/');
+
 			// not a double slash, it's escaping
 			if($this->savePath == '\\') {
 				$this->savePath = '';
 			}
 			$this->saveFile = $pathInfo['basename'];
+
+			if(array_key_exists('query', $urlInfo)) {
+				if(array_key_exists('extension', $pathInfo)) {
+						$this->saveFile = $pathInfo['filename'] . '__' . hash("crc32", $urlInfo['query']) . '.' . $pathInfo['extension'];
+				}
+				else {
+					$this->saveFile = $pathInfo['basename'] . '__' . hash("crc32", $urlInfo['query']);
+				}
+			}
 
 			if($this->rootBased) {
 				if($basePathInfo['dirname'] == $pathInfo['dirname']) {
@@ -216,6 +227,8 @@ class LinkInfo {
 }
 
 class Page extends Resource {
+
+	public $extension = null;
 	
 	public function __construct($params) {
 		parent::__construct($params);

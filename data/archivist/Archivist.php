@@ -17,6 +17,8 @@ class Archivist {
 	public $rootUrl;
 	public $pagesList = array();
 	public $gzipped = false;
+
+	protected $extensions = array('html', 'html', 'php', 'asp');
 	
 	protected $pages = array();
 	protected $resources = array();
@@ -28,37 +30,50 @@ class Archivist {
 
 		$this->rootUrl = rtrim($this->rootUrl, '/') . '/';
 
-		foreach ($this->pagesList as $pageUrl) {
-			$pageUrl = rtrim($this->rootUrl, '/') . ($pageUrl == '/' ? '/' : '/' . trim($pageUrl, '/') . '/');
-			$this->_pages[$pageUrl] = new Page(array(
+		print "Root url is: " . $this->rootUrl . "\n";
+
+		foreach ($this->pagesList as $pageUri) {
+
+			$extension = pathinfo($pageUri, PATHINFO_EXTENSION);
+			if($pos = strpos($extension, '?')){
+				$extension = substr($extension, 0, $pos);
+			}
+			$pageUri = ($pageUri == '/' ? '/' : '/' . trim($pageUri, '/') . '/');
+			if(in_array($extension, $this->extensions)){
+				$pageUri = rtrim($pageUri, '/');
+			}
+			$pageUrl = rtrim($this->rootUrl, '/') . $pageUri;
+			print "Adding to process queue: " . $pageUrl . "\n";
+
+			$this->_pages[$pageUri] = new Page(array(
 				'url' => $pageUrl,
 				'gzipped' => $this->gzipped,
+				'extension' => $extension,
 			));
 		}
 	}
 	
 	public function run() {
-		foreach($this->_pages as $url => $page) {
+		foreach($this->_pages as $uri => $page) {
 			$page->load();
 			$page->saw();
 			$page->rewrite();
-			$link = new LinkInfo($url, '.');
+
+			$link = new LinkInfo($this->rootUrl, $uri);
 
 			if(empty($link->saveFile)) {
 				$link->saveFile = 'index.html';
 			}
 			else {
-				$link->saveFile .=  '.html';
+				if(empty($page->extension)) {
+					$link->saveFile .=  '.html';
+				}
 			}
 			self::prefixSavePath($link);
 			$page->save($link);
 			
 			$linksList = $page->getLinksList();
 			$this->loadBinaries(array_merge($linksList['scripts'], $linksList['images'], $linksList['bg-urls']));
-			/*
-			echo "<pre>\n";
-			print_r($link);
-			*/
 
 			$list = $linksList['styles'];
 			for($i=0; $i < count($list); $i++) {
