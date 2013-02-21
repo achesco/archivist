@@ -73,7 +73,12 @@ class Archivist {
 			$page->save($link);
 			
 			$linksList = $page->getLinksList();
-			$this->loadBinaries(array_merge($linksList['scripts'], $linksList['images'], $linksList['bg-urls']));
+			$this->loadBinaries(array_merge(
+				$linksList['scripts'],
+				$linksList['images'],
+				$linksList['bg-urls'],
+				$linksList['icons']
+			));
 
 			$list = $linksList['styles'];
 			for($i=0; $i < count($list); $i++) {

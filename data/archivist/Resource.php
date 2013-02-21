@@ -58,7 +58,7 @@ class Resource {
 	}
 	
 	public function sawStyles() {
-		preg_match_all('/<link[^>]+href="([^"]+)"/', $this->content, $matches);
+		preg_match_all('/<link[^>]+href="([^"]+)"[^>]+/', $this->content, $matches);
 		if(isset($matches[1])) {
 			for($i=0; $i < count($matches[1]); $i++) {
 				$link = $matches[1][$i];
@@ -116,6 +116,26 @@ class Resource {
 			}
 		}
 	}
+
+	public function sawIcons() {
+		preg_match_all('/<link[^>]+href="([^"]+)"[^>]+/', $this->content, $matches);
+		if(isset($matches[1])) {
+			for($i=0; $i < count($matches[1]); $i++) {
+				$link = $matches[1][$i];
+				if(!empty($link) && (
+					strpos($matches[0][$i], 'rel="shortcut icon"') > 0 ||
+					strpos($matches[0][$i], 'rel="icon"') > 0 ||
+					strpos($matches[0][$i], 'rel="apple-touch-icon"') > 0 ||
+					strpos($matches[0][$i], 'rel="apple-touch-icon-precomposed"') > 0
+				)){
+					$link = new LinkInfo($this->url, $link);
+					$link->encloseOriginalChunk('href="', '"');
+					$link->encloseReplaceChunk('href="', '"');
+					$this->linksList['icons'][] = $link;
+				}
+			}
+		}
+	}
 	
 	public function rewrite() {
 		$search = array();
@@ -165,9 +185,9 @@ class LinkInfo {
 		$level = $level < 0 ? 0 : $level;
 		
 		if($this->external) {
-			$this->savePath = str_repeat('../', $level) . '_ext_';
+			$this->savePath =  '_ext_';
 			$this->saveFile = md5($link) . '-' . $pathInfo['basename'];
-			$this->replacePath = $this->savePath . '/' . $this->saveFile;
+			$this->replacePath = str_repeat('../', $level) . $this->savePath . '/' . $this->saveFile;
 			
 			// support for freaking url('fonts/webfont.eot?#iefix')
 			if(strpos($link, '?') > 0) {
@@ -239,6 +259,7 @@ class Page extends Resource {
 		$this->sawStyles();
 		$this->sawImages();
 		$this->sawBgUrls();
+		$this->sawIcons();
 	}
 }
 
