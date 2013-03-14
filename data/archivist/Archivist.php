@@ -1,8 +1,5 @@
 <?php
 /**
- * NOTES:
- * CSS @import not supported.
- * 
  * @todo external resources from css - relative path failed
  * @todo script / style form root www folder?
  * @todo 404 handle
@@ -80,24 +77,27 @@ class Archivist {
 				$linksList['icons']
 			));
 
-			$list = $linksList['styles'];
-			for($i=0; $i < count($list); $i++) {
-				$link = $list[$i];
-				self::prefixSavePath($link);
-				if(!file_exists($link->savePath . '/' . $link->saveFile)) {
-					$page = new Style(array(
-						'url' => $link->downloadUrl,
-						'gzipped' => $this->gzipped,
-					));
-					$page->load();
-					$page->saw();
-					$page->rewrite();
-					$page->save($link);
-					$innerLinksList = $page->getLinksList();
-					$this->loadBinaries(array_merge($innerLinksList['bg-urls'], $innerLinksList['filter-srcs']));
-				}
-			}
+			$this->loadStyles($linksList['styles']);
+		}
+	}
 
+	public function loadStyles($list) {
+		for($i=0; $i < count($list); $i++) {
+			$link = $list[$i];
+			self::prefixSavePath($link);
+			if(!self::isLoaded($link)) {
+				$page = new Style(array(
+					'url' => $link->downloadUrl,
+					'gzipped' => $this->gzipped,
+				));
+				$page->load();
+				$page->saw();
+				$page->rewrite();
+				$page->save($link);
+				$innerLinksList = $page->getLinksList();
+				$this->loadBinaries(array_merge($innerLinksList['bg-urls'], $innerLinksList['filter-srcs']));
+				$this->loadStyles($innerLinksList['style-imports']);
+			}
 		}
 	}
 	
@@ -105,7 +105,7 @@ class Archivist {
 		for($i=0; $i < count($list); $i++) {
 			$link = $list[$i];
 			self::prefixSavePath($link);
-			if(!file_exists($link->savePath . '/' . $link->saveFile)) {
+			if(!self::isLoaded($link)) {
 				$page = new BinaryResource(array(
 					'url' => $link->downloadUrl,
 					'gzipped' => false,
@@ -114,6 +114,10 @@ class Archivist {
 				$page->save($link);
 			}
 		}
+	}
+
+	public function isLoaded($link) {
+		return file_exists($link->savePath . '/' . $link->saveFile);
 	}
 	
 	public function prefixSavePath($link) {

@@ -14,6 +14,8 @@ class Resource {
 		'images' => array(),
 		'bg-urls' => array(),
 		'filter-srcs' => array(),
+		'icons' => array(),
+		'style-imports' => array(),
 	);
 
 	public function __construct($params) {
@@ -132,6 +134,21 @@ class Resource {
 					$link->encloseOriginalChunk('href="', '"');
 					$link->encloseReplaceChunk('href="', '"');
 					$this->linksList['icons'][] = $link;
+				}
+			}
+		}
+	}
+
+	public function sawStyleImports() {
+		preg_match_all('/@import\s+(url\()?([^\)\s;]+)/', $this->content, $matches);
+		if(isset($matches[2])) {
+			for($i=0; $i < count($matches[2]); $i++) {
+				$link = trim(trim(trim($matches[2][$i], '"'), "'"));
+				if(!empty($link)) {
+					$link = new LinkInfo($this->url, $link);
+					$link->originalChunk = $matches[0][$i];
+					$link->encloseReplaceChunk("@import url('", "')");
+					$this->linksList['style-imports'][] = $link;
 				}
 			}
 		}
@@ -272,6 +289,7 @@ class Style extends Resource {
 	public function saw() {
 		$this->sawBgUrls();
 		$this->sawFilterSrcs();
+		$this->sawStyleImports();
 	}
 }
 
