@@ -1,6 +1,6 @@
 Archivist here
 ==============
-This is old and simple (yet still works), single-threaded tool for predefined pages set collection. This is NOT crawler. Primary usage purpose - creating local working copy of web-pages (and pass it to customers).
+This is the old and simple (yet still works), single-threaded tool for predefined pages set collection. This is NOT crawler. Primary usage purpose - creating local working copy of web-pages (and pass it to customers).
 
 Example `www/params.php`
 =========
